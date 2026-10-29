@@ -1,0 +1,42 @@
+LABORATORIO SECURITY BY DESIGN
+Estudiante: Victor Contreras Guilloux
+
+TÉRMINOS PAREADOS
+Autenticación: Verifica la identidad de una persona o cuenta.
+Autorización: Decide qué recursos y operaciones puede utilizar una cuenta.
+Validación: Comprueba que los datos recibidos cumplen las reglas definidas.
+Consultas parametrizadas: Separan los valores de entrada de la estructura SQL.
+Mínimo privilegio: Cada usuario o componente recibe solo los permisos que necesita.
+
+ANÁLISIS DE AMENAZAS
+1. En ReservaFácil, un cliente modifica el parámetro reservaId y recibe datos de otra persona. ¿Qué cambio aborda mejor la causa raíz?
+En cada solicitud, verificar en el servidor que la identidad autenticada tenga permiso sobre esa reserva concreta.
+2. La ruta /admin no aparece en el menú de clientes, pero puede abrirse escribiendo la URL. ¿Cuál es la medida más sólida?
+Aplicar autorización en el servidor en cada operación administrativa, con denegación por defecto.
+3. El buscador construye SQL concatenando el texto ingresado. ¿Qué cambio reduce directamente el riesgo de inyección?
+Usar consultas parametrizadas; validar formato y longitud según la regla de negocio, sin depender de una lista de caracteres prohibidos.
+4. Una copia de la base de datos expone contraseñas porque se guardaron en texto plano. ¿Qué solución es apropiada?
+Guardar hashes con sal mediante una función específica para contraseñas y revisar el acceso a respaldos.
+5. Dos clientes consiguen reservar el mismo horario al enviar solicitudes casi simultáneas. ¿Qué combinación es más robusta?
+Revalidar disponibilidad al confirmar y aplicar transacción junto con una restricción de integridad en la base de datos.
+
+DECISIONES DE DISEÑO
+1. Una API recibe solicitudes de clientes y administradores. ¿Dónde conviene aplicar el control de acceso?
+En el servidor/API, en cada operación protegida, comprobando identidad, rol y permiso sobre el recurso.
+2. El sistema necesita verificar contraseñas sin poder recuperarlas en texto original. ¿Qué enfoque corresponde?
+Hash específico para contraseñas, con sal única y parámetros de coste apropiados.
+3. Un error inesperado ocurre al guardar una reserva. ¿Qué respuesta equilibra seguridad y diagnóstico?
+Mostrar un mensaje genérico con identificador de incidente y registrar detalles técnicos protegidos.
+4. Una búsqueda necesita filtrar reservas por apellido y fecha. ¿Cuál es el diseño preferible?
+Usar parámetros para valores y validar tipos, rangos y reglas de negocio en el servidor.
+5. Un servicio solo necesita leer horarios disponibles. ¿Cómo aplicar mínimo privilegio?
+Asignarle una identidad con permisos de lectura estrictamente necesarios y separar funciones que requieren escritura.
+
+PLAN DE PRUEBAS
+Prueba A: Con dos cuentas de prueba, solicitar la reserva de la cuenta B desde A y verificar denegación sin exposición de datos.
+Prueba B: Iniciar sesión como usuario común y llamar directamente la operación administrativa; verificar que la API la deniega.
+Prueba C: La consulta trata la entrada como un valor y no permite que altere la estructura SQL; el código usa parámetros.
+Reflexión: Los controles tempranos permiten reducir riesgos y evitar que decisiones inseguras se propaguen; las pruebas siguen siendo necesarias.
+Observaciones: El control debe repetirse en el servidor.
+
+Estado: Finalizado
